@@ -6,33 +6,113 @@
   </head>
   <body>
     <p>LET'S GET IT</p>
-
     <button id="authorize_button" style="display: none;">Authorize</button>
     <button id="signout_button" style="display: none;">Sign Out</button>
+    <div class="X">
+        <div id="xCheck" class="buttonX">
+            <p1>Choose your X value:</p1>
+            <input name="X" type="radio" value="-2">-2
+            <input name="X" type="radio" value="-1">-1
+            <input name="X" type="radio" value="0">0
+            <input name="X" type="radio" value="1">1
+            <input name="X" type="radio" value="2">2
+        </div>
+    </div>
+    <div class="Y">
+        <div id="yCheck" class="buttonY">
+            <p1>Choose your Y value:</p1>
+            <input name="Y" type="radio" value="-2">-2
+            <input name="Y" type="radio" value="-1">-1
+            <input name="Y" type="radio" value="0">0
+            <input name="Y" type="radio" value="1">1
+            <input name="Y" type="radio" value="2">2
+        </div>
+    </div>
+    <div class="R">
+        <div id="rCheck" class="buttonR">
+            <p1>Choose your R value:</p1>
+            <input name="R" type="radio" value="1">1
+            <input name="R" type="radio" value="2">2
+            <input name="R" type="radio" value="3">3
+            <input name="R" type="radio" value="4">4
+            <input name="R" type="radio" value="5">5
+        </div>
+    </div>  
     <button id="clear_button">Clear</button>
-
-    <pre id="content" style="white-space: pre-wrap;">
-      <pre id="child_content" style="white-space: pre-wrap;"></pre>
-    </pre>
-
+    <button id="add_button">Add</button>
+    <button id="show_button">Show Coords</button>
+    <pre id="content" style="white-space: pre-wrap;"></pre>
     <script type="text/javascript">
-      
+      //google fields
       const CLIENT_ID = '577068218731-hlmpjf8t01pmu8dkr260un2j9i8loj9i.apps.googleusercontent.com';
-      const API_KEY = 'AIzaSyBf7v70QcuU-Z7QRThnChyOsAqgQzDuYTI';
-
-     
+      const API_KEY = 'AIzaSyBf7v70QcuU-Z7QRThnChyOsAqgQzDuYTI';   
       const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-
       const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
-
+      //buttons
       const authorizeButton = document.getElementById('authorize_button');
       const signoutButton = document.getElementById('signout_button');
       const clearButton = document.getElementById('clear_button');
-    
+      const addButton = document.getElementById('add_button');
+      const showButton = document.getElementById('show_button');
+      const xButton = document.querySelector('.buttonX');
+      const yButton = document.querySelector('.buttonY');
+      const rButton = document.querySelector('.buttonR');
+
       clearButton.addEventListener("click", function (){
         clearData();
-        removeText();
+        let count = document.getElementsByTagName("pre").length - 1;
+        while(count!==0){
+          removeText();
+          count -= 1;
+        }
         putText("No data now");
+      });
+
+      xButton.addEventListener("click", function(event){
+        if(!event.target.matches('input[name="X"]')){
+            return;
+        }
+        x = event.target.value;
+        console.log(x);
+      });
+
+      yButton.addEventListener("click", function(event){
+        if(!event.target.matches('input[name="Y"]')){
+            return;
+        }
+        y = event.target.value;
+        console.log(y);
+      });
+
+      rButton.addEventListener("click", function(event){
+        if(!event.target.matches('input[name="R"]')){
+            return;
+        }
+        r = event.target.value;
+        console.log(r);
+      });
+
+      let ri = 2;
+
+      addButton.addEventListener("click", function(event){
+        const start = Date.now();
+        const date = new Date().toUTCString();
+        const hit = "true";
+        let count = document.getElementsByTagName("pre").length - 1;
+        while(count!==0){
+          removeText();
+          count -= 1;
+        }
+        const finish = Date.now();
+        const time = finish - start;
+        addNewCoord(x, y, r, hit, time, date, ri);
+        ri++;
+        console.log(ri);
+        //window.location.reload();
+      });
+
+      showButton.addEventListener("click", function(){
+        window.location.reload();
       });
 
       function handleClientLoad() {
@@ -52,7 +132,6 @@
           updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
           authorizeButton.onclick = handleAuthClick;
           signoutButton.onclick = handleSignoutClick;
-          clearButton.onclick = clearData;
         }, function(error) {
           putText(JSON.stringify(error, null, 2));
         });
@@ -63,7 +142,6 @@
           authorizeButton.style.display = 'none';
           clearButton.style.display = 'display';
           signoutButton.style.display = 'block';
-          //addNewCoord();
           listCoords();
         } else {
           authorizeButton.style.display = 'block';
@@ -83,7 +161,7 @@
       function clearData() {
         const params = {
           spreadsheetId: '1jl_p1MpWZ0WcTndmqewjWkyoLA1rG2NO5pszqB56i74',
-          range: 'A2:C21',  
+          range: 'A2:F21',  
         };
 
         const clearValuesRequestBody = {
@@ -98,29 +176,29 @@
       }
 
       function putText(message) {
-        const pre = document.getElementById('child_content');
-        const textContent = document.createTextNode(message + '\n');
-        pre.appendChild(textContent)
+        let child = document.createElement("pre");
+        const textContent = message + '\n';
+        child.innerHTML = textContent;
+        document.getElementById('content').appendChild(child);
       }
 
       function removeText(){
-        const text = document.getElementById('content');
-        const childText = document.getElementById('child_content')
-        text.removeChild(childText);
+        const parent = document.getElementById("content").lastChild;
+        parent.parentNode.removeChild(parent);
       }
 
       function listCoords() {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: '1jl_p1MpWZ0WcTndmqewjWkyoLA1rG2NO5pszqB56i74',
-          range: 'A2:C21',
+          range: 'A2:F21',
         }).then(function(response) {
           console.log(response);
           const range = response.result;
-          if (range.values.length > 0) {
+          if (range.values !== undefined) {
             putText('X, Y, R, Hit, Script Execution, Date:');
             for (i = 0; i < range.values.length; i++) {
               const row = range.values[i];            
-              putText(row[0] + ', ' + row[1] + ', ' + row[2] + ', ' + row[3] + ', ' + row[4] + ', ' + row[5]);
+              putText(row[0] + '; ' + row[1] + '; ' + row[2] + '; ' + row[3] + '; ' + row[4] + '; ' + row[5]);
             }
           } else {
             putText('No data found.');
@@ -130,26 +208,48 @@
         });
       }
 
-      function addNewCoord() {
-      const params = {
-        spreadsheetId: '1jl_p1MpWZ0WcTndmqewjWkyoLA1rG2NO5pszqB56i74',
-        range: 'A8:C8', 
-        valueInputOption: 'USER_ENTERED',  
-      };
+      function firstEmptyRow() {
+        let count = 2;
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: '1jl_p1MpWZ0WcTndmqewjWkyoLA1rG2NO5pszqB56i74',
+          range: 'A2:C21',
+        }).then(function(response) {
+          if (response.result.values !== undefined){
+            for(i = 0; i < response.result.values.length; i++){
+              if(response.result.values[i] !== null)
+                count++;
+            }
+          }
 
-      const valueRangeBody = {
-        values: [
-          [2, 2, 2]
-        ],
-      };
+          console.log(response.result.values.length);
+        });
+        
+        return count;
+      }
+      
+      function addNewCoord(x, y, r, hit, time, date, row) {
+        //let rowNumber = firstEmptyRow();
+        let rowNumber = row;
+        console.log(rowNumber);
+        putText("New coordinate added in the row #" + rowNumber);
+        const params = {
+          spreadsheetId: '1jl_p1MpWZ0WcTndmqewjWkyoLA1rG2NO5pszqB56i74', 
+          range: `A${rowNumber}:F${rowNumber}`,
+          valueInputOption: 'USER_ENTERED',  
+        };
+        const valueRangeBody = {
+          values: [
+            [x, y, r, hit, time, date]
+          ],
+        };
 
-      const request = gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody);
-      request.then(function(response) {
-        console.log(response.result);
-      }, function(reason) {
-        console.error('error: ' + reason.result.error.message);
-      });
-    }
+        const request = gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody);
+        request.then(function(response) {
+          console.log(response.result);
+        }, function(reason) {
+          console.error('error: ' + reason.result.error.message);
+        });
+      }
 
     </script>
 
@@ -159,3 +259,4 @@
     </script>
   </body>
 </html>
+
